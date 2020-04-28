@@ -14,8 +14,8 @@ from routedrawhelper import LineMapLayer
 from gpshelper import GpsHelper
 
 #import routes and their center coordinates of routes
-routes_data = pickle.load(open("routes_data.pickle","rb"))
-route_center_coords = pickle.load(open("route_center_coords.pickle","rb"))
+routes_data = pickle.load(open("../routes_data.pickle","rb"))
+route_center_coords = pickle.load(open("../route_center_coords.pickle","rb"))
 
 class WindowManager(ScreenManager):
     pass      
@@ -53,7 +53,7 @@ class RouteMap(Screen):
         Clock.schedule_once(self.post,0)
     
     def post(self,*args):       
-        source = MBTilesMapSource("paastocht2020.mbtiles")
+        source = MBTilesMapSource("../paastocht2020.mbtiles")
         self.ids.mapview.map_source = source
         self.layer = LineMapLayer(self.dag)
         self.ids.mapview.add_layer(self.layer, mode="scatter")   # window scatter
