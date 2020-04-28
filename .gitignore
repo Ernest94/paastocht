@@ -5,9 +5,11 @@
 # Ignore these folders
 __pycache__
 cache
-libs
 
 # Don't ignore these files
+libs/garden/garden.mapview/*
+!libs/garden/garden.mapview/mapview
+libs/garden/garden.mapview/mapview/*
 !libs/garden/garden.mapview/mapview/__init__.py
 !libs/garden/garden.mapview/mapview/mbtsource.py
 !libs/garden/garden.mapview/mapview/view.py
