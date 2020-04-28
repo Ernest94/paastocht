@@ -54,6 +54,7 @@ class RouteMap(Screen):
     
     def post(self,*args):       
         source = MBTilesMapSource("paastocht2020.mbtiles")
+        source.bounds = 5.274382,49.994698,5.849791,50.249160
         self.ids.mapview.map_source = source
         self.layer = LineMapLayer(self.dag)
         self.ids.mapview.add_layer(self.layer, mode="scatter")   # window scatter
