@@ -1,4 +1,4 @@
 *.mbtiles
 
-core/__pycache__/
-core/cache/
+core/__pycache__
+core/cache
