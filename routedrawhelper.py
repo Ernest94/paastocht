@@ -5,7 +5,7 @@ from kivy.graphics import Color, Line
 from kivy.graphics.context_instructions import Translate, Scale
 
 #import routes of all days
-routes_data = pickle.load(open("../routes_data.pickle","rb"))
+routes_data = pickle.load(open("routes_data.pickle","rb"))
 
 
 class LineMapLayer(MapLayer):
