@@ -80,30 +80,20 @@
     FloatLayout:
         MapView:
             id:mapview
-            zoom: 6
+            zoom: 14
             double_tap_zoom: True
             MapMarkerPopup:
                 source:'blue_gps_dot.png'
                 id: gps_tracker
             MapMarkerPopup:
-                id:start_marker
-                #lat:50.2240061
-                #lon:5.7321618
-                Label:
-                    id:label_start_marker
-                    #text: 'Eind dag 1'
-                    color: 0,0,0,1
-                    font_size: 24
-                    bold: True
-            MapMarkerPopup:
                 id:eind_marker
-                #lat:50.134042
-                #lon:5.761925
+                source: "red_flag_gps.png"
                 Label:
                     id:label_eind_marker
-                    #text: 'Eind dag 1'
                     color: 0,0,0,1
                     font_size: 24
                     bold: True
+
+
                 
                 
