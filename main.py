@@ -15,9 +15,10 @@ from routedrawhelper import LineMapLayer
 from gpshelper import GpsHelper
 from routeinfopopup import RouteInfoPopUp
 
-#import routes and their center coordinates of routes
+#import routes, their center coordinates and the route info
 routes_data = pickle.load(open("routes_data.pickle","rb"))
 route_center_coords = pickle.load(open("route_center_coords.pickle","rb"))
+route_info = pickle.load(open("route_info.pickle","rb"))
 
 class WindowManager(ScreenManager):
     pass      
@@ -88,7 +89,7 @@ class RouteMap(Screen):
         self.manager.transition.direction = "right"
         
     def route_info_popup(self,*args):
-        popup = Popup(title='Route info dag 1 - 24 km',content=Label(text='Van [b]Chabrehez[/b] naar Houffalize. Vandaag lopen we in zuidelijke richting. Het eerste deel door de natuur en het tweede deel voornamelijk door dorpjes',markup=True, text_size=(self.width*0.5,self.width*0.6) ,halign='left',valign='top'),size_hint=(0.65,0.6),pos_hint={'x':0.2, 'y':0.2})
+        popup = Popup(title=route_info[self.dag][0],content=Label(text=route_info[self.dag][1], text_size=(self.width*0.5,self.width*0.6) ,halign='left',valign='top'),size_hint=(0.65,0.6),pos_hint={'x':0.2, 'y':0.2})
         popup.open()
         
     def center_map_on_gps(self,*args):
