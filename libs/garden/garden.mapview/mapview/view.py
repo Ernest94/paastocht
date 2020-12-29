@@ -341,6 +341,8 @@ class MapView(Widget):
                                (self.height + margin))
         c1 = self.get_latlon_at(x1, y1)
         c2 = self.get_latlon_at(x2, y2)
+#        print(c1,c2)
+#        print(self.zoom)
         return Bbox((c1.lat, c1.lon, c2.lat, c2.lon))
 
     bbox = AliasProperty(get_bbox, None, bind=["lat", "lon", "_zoom"])

@@ -49,19 +49,19 @@
                     app.root.current = "routemap"
                     root.manager.transition.direction = "left" 
             Button:
-                text:"Dag 4 kort"
+                text:"Dag 4"
                 font_size:36
                 on_release:
                     root.btn4a_pressed()
                     app.root.current = "routemap"
                     root.manager.transition.direction = "left" 
-            Button:
-                text:"Dag 4 lang"
-                font_size:36
-                on_release:
-                    root.btn4b_pressed()
-                    app.root.current = "routemap"
-                    root.manager.transition.direction = "left" 
+           # Button:
+             #   text:"Dag 4 lang"
+             #   font_size:36
+              #  on_release:
+               #     root.btn4b_pressed()
+              #      app.root.current = "routemap"
+              #      root.manager.transition.direction = "left" 
             Button:
                 text:"Dag 5"
                 font_size:36
@@ -80,7 +80,7 @@
     FloatLayout:
         MapView:
             id:mapview
-            zoom: 14
+            zoom: 16
             double_tap_zoom: True
             MapMarkerPopup:
                 source:'blue_gps_dot.png'

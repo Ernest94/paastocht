@@ -1,12 +1,8 @@
-from kivy.garden.mapview import MapLayer
-import pickle
+import sqlite3;
 
+from kivy.garden.mapview import MapLayer
 from kivy.graphics import Color, Line
 from kivy.graphics.context_instructions import Translate, Scale
-
-#import routes of all days
-routes_data = pickle.load(open("routes_data.pickle","rb"))
-
 
 class LineMapLayer(MapLayer):
     
@@ -22,11 +18,25 @@ class LineMapLayer(MapLayer):
         mapview = self.parent
         self.zoom = mapview.zoom        
         point_list=[]
-        for index,geo_coordinates in enumerate(routes_data[self.day]):
-            screen_coordinates = mapview.get_window_xy_from(routes_data[self.day][2*index+1], routes_data[self.day][2*index], mapview.zoom)
+        
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        sql = "SELECT * FROM route_coordinates WHERE day = ?"
+        day = (self.day, )
+        c_mbtiles.execute(sql, day)
+        myresult = c_mbtiles.fetchall()
+        if self.day=='6':
+            coordinates_list = eval(myresult[0][1][2:-2])
+        else:
+            coordinates_list = eval(myresult[0][1][2:-1])
+        db_mbtiles.close()
+
+        for index,geo_coordinates in enumerate(coordinates_list):
+            screen_coordinates = mapview.get_window_xy_from(coordinates_list[2*index+1], coordinates_list[2*index], mapview.zoom)
             point_list.append(screen_coordinates[0])
             point_list.append(screen_coordinates[1])
-            if index==int((len(routes_data[self.day]))/2-1):
+            if index==int((len(coordinates_list))/2-1):
                 break
             
         # When zooming we must undo the current scatter transform

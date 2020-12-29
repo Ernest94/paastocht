@@ -6,6 +6,7 @@
 __pycache__
 cache
 
+
 # Don't ignore these files
 libs/garden/garden.mapview/*
 !libs/garden/garden.mapview/mapview
