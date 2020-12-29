@@ -1,8 +1,5 @@
 from kivy.app import App
 from kivy.utils import platform
-from kivy.uix.popup import Popup
-from kivy.uix.button import Label
-from mapview.mbtsource import MBTilesMapSource
 
 class GpsHelper():
     
