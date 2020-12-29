@@ -1,10 +1,13 @@
 
 # Ignore these files
 *.mbtiles
+*.png
+*.csv
 
 # Ignore these folders
 __pycache__
 cache
+
 
 # Don't ignore these files
 libs/garden/garden.mapview/*
