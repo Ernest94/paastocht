@@ -5,6 +5,16 @@ import json
 
 app = Flask(__name__)
 
+@app.route('/verify', methods=['POST'])
+def verify():
+    if request.method == "POST":
+        req_data = request.get_json()
+        if req_data['password']=="ZWeRFBoND":
+            return json.dumps(1)
+        else:
+            return json.dumps(0)
+
+
 @app.route('/tiles', methods=['GET'])
 def getTiles():
     if request.method == "GET":

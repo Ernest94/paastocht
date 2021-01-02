@@ -1,6 +1,9 @@
 import sqlite3;
 import base64
 import os
+import json
+
+from kivymd.app import MDApp
 
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -14,13 +17,148 @@ from mapview.mbtsource import MBTilesMapSource
 from routedrawhelper import LineMapLayer
 from gpshelper import GpsHelper
 
+class StartWindowManager(ScreenManager):
+    pass
+
 class WindowManager(ScreenManager):
     pass
 
+class DownloadMapData():
+    def fillTileTable(self,req1):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `tiles` (`zoom_level` int NOT NULL, `tile_column` int NOT NULL, `tile_row` int NOT NULL, `tile_data` BLOB NOT NULL)")
+        
+        ##Strip the long string
+        list_tile_row_strings = req1.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_tile_row_strings[1:]):
+            try:
+                list_tile_row_col_string = value.split("sAndErnEstcol")
+                row_4_bytes = base64.decodebytes(list_tile_row_col_string[5].encode('utf-8'))
+                sql = "INSERT INTO tiles (zoom_level,tile_column,tile_row,tile_data) VALUES (?,?,?,?)"
+                val = (int(list_tile_row_col_string[2]),int(list_tile_row_col_string[3]),int(list_tile_row_col_string[4]),row_4_bytes)
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        return print("tile table is filled")
+
+    def fillMetaDataTable(self,req2):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `metadata` (`name` string NOT NULL, `value` string NOT NULL)")
+
+        #Strip the long string
+        list_metadata_row_strings = req2.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_metadata_row_strings[1:]):
+            try:
+                list_metadata_row_col_string = value.split("sAndErnEstcol")
+                sql = "INSERT INTO metadata (name,value) VALUES (?,?)"
+                val = (str(list_metadata_row_col_string[2]),str(list_metadata_row_col_string[3]))
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        return print("metadata table is filled")
+
+    def fillRouteInfoTable(self,req3):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `route_info` (`day` varchar(10) NOT NULL, `title` string NOT NULL,`body` string NOT NULL)")
+
+        #Strip the long string
+        list_route_info_row_strings = req3.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_route_info_row_strings[1:]):
+            try:
+                list_route_info_row_col_string = value.split("sAndErnEstcol")
+                sql = "INSERT INTO route_info (day,title,body) VALUES (?,?,?)"
+                val = (str(list_route_info_row_col_string[2]),str(list_route_info_row_col_string[3]),str(list_route_info_row_col_string[4]))
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        return print("route_info table is filled")
+
+    def fillRouteCoordinatesTable(self,req4):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `route_coordinates` (`day` varchar(10) NOT NULL, `coordinate_string` blob NOT NULL)")
+
+        #Strip the long string
+        list_route_coordinates_row_strings = req4.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_route_coordinates_row_strings[1:]):
+            try:
+                list_route_coordinates_row_col_string = value.split("sAndErnEstcol")
+                sql = "INSERT INTO route_coordinates (day,coordinate_string) VALUES (?,?)"
+                val = (str(list_route_coordinates_row_col_string[2]),list_route_coordinates_row_col_string[3])
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        return print("route_coordinates table is filled")
+
+    def initialize(self,*args):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        db_mbtiles.close()
+        try:
+            req1 = UrlRequest("http://192.168.178.234:5000/tiles")
+            req1.wait()
+            self.fillTileTable(req1)
+            req2 = UrlRequest("http://192.168.178.234:5000/metadata")
+            req2.wait()
+            self.fillMetaDataTable(req2)
+            req3 = UrlRequest("http://192.168.178.234:5000/route/info")
+            req3.wait()
+            self.fillRouteInfoTable(req3)
+            req4 = UrlRequest("http://192.168.178.234:5000/route/coordinates")
+            req4.wait()
+            self.fillRouteCoordinatesTable(req4)
+        except:
+            os.remove(filename)
+            print("Something went wrong")
+        finally:
+            print("The 'try except' is finished")
+    
+
+class LogginScreen(Screen):
+    def __init__(self, **kwargs):
+        super(LogginScreen, self).__init__(**kwargs)
+
+    def error(self,*args):
+        return print("error")
+
+    def verify_password(self, *args):
+        headers = {'Content-type': 'application/json',
+            'Accept': 'text/plain'}
+        values = {'password':self.ids.password_input.text}
+        params = json.dumps(values)
+        password_req = UrlRequest('http://192.168.178.234:5000/verify', req_body=params, req_headers=headers, on_error=self.error())
+        password_req.wait()
+        if password_req.result=="1":
+            print("password is correct")
+            self.switch_screen()
+        else:
+            print("wrong password")
+
+    def switch_screen(self, *args):
+        DownloadMapData().initialize()
+        self.manager.current = 'routesindexwindow'
+        self.manager.transition.direction = "left"
+        return WindowManager()
+    
+
+
 class RoutesIndexWindow(Screen):
-
     dagindexwindow = StringProperty()
-
     def btn1_pressed(self):
         self.dagindexwindow = '1'
     def btn2_pressed(self):
@@ -35,7 +173,6 @@ class RoutesIndexWindow(Screen):
         self.dagindexwindow = '5'
     def btn6_pressed(self):
         self.dagindexwindow = '6'
-
     pass
 
 class RouteMap(Screen):
@@ -48,9 +185,9 @@ class RouteMap(Screen):
         GpsHelper().run()
 
     def on_enter(self):
-        Clock.schedule_once(self.post,0)
+        Clock.schedule_once(self.build_map,0)
 
-    def post(self,*args):
+    def build_map(self,*args):
         source = MBTilesMapSource("map_data.mbtiles")
         self.ids.mapview.map_source = source
         self.layer = LineMapLayer(self.dag)
@@ -138,117 +275,15 @@ class RouteMap(Screen):
         self.ids.mapview.remove_layer(self.layer)
         self.ids.mapview.zoom = 16
 
-class MainApp(App):
-    
-    def fillTileTable(self,req1):
-        filename = "map_data.mbtiles"
-        db_mbtiles = sqlite3.connect(filename)
-        c_mbtiles = db_mbtiles.cursor()
-        c_mbtiles.execute("CREATE TABLE `tiles` (`zoom_level` int NOT NULL, `tile_column` int NOT NULL, `tile_row` int NOT NULL, `tile_data` BLOB NOT NULL)")
-        
-        ##Strip the long string
-        list_tile_row_strings = req1.result.split("sAndErnEstrow")
-        for index,value in enumerate(list_tile_row_strings[1:]):
-            try:
-                list_tile_row_col_string = value.split("sAndErnEstcol")
-                row_4_bytes = base64.decodebytes(list_tile_row_col_string[5].encode('utf-8'))
-                sql = "INSERT INTO tiles (zoom_level,tile_column,tile_row,tile_data) VALUES (?,?,?,?)"
-                val = (int(list_tile_row_col_string[2]),int(list_tile_row_col_string[3]),int(list_tile_row_col_string[4]),row_4_bytes)
-                c_mbtiles.execute(sql,val)
-            except:
-                pass
-        db_mbtiles.commit()
-        db_mbtiles.close()
-        return print("tile table is filled")
-
-    def fillMetaDataTable(self,req2):
-        filename = "map_data.mbtiles"
-        db_mbtiles = sqlite3.connect(filename)
-        c_mbtiles = db_mbtiles.cursor()
-        c_mbtiles.execute("CREATE TABLE `metadata` (`name` string NOT NULL, `value` string NOT NULL)")
-
-        #Strip the long string
-        list_metadata_row_strings = req2.result.split("sAndErnEstrow")
-        for index,value in enumerate(list_metadata_row_strings[1:]):
-            try:
-                list_metadata_row_col_string = value.split("sAndErnEstcol")
-                sql = "INSERT INTO metadata (name,value) VALUES (?,?)"
-                val = (str(list_metadata_row_col_string[2]),str(list_metadata_row_col_string[3]))
-                c_mbtiles.execute(sql,val)
-            except:
-                pass
-        db_mbtiles.commit()
-        db_mbtiles.close()
-        return print("metadata table is filled")
-
-    def fillRouteInfoTable(self,req3):
-        filename = "map_data.mbtiles"
-        db_mbtiles = sqlite3.connect(filename)
-        c_mbtiles = db_mbtiles.cursor()
-        c_mbtiles.execute("CREATE TABLE `route_info` (`day` varchar(10) NOT NULL, `title` string NOT NULL,`body` string NOT NULL)")
-
-        #Strip the long string
-        list_route_info_row_strings = req3.result.split("sAndErnEstrow")
-        for index,value in enumerate(list_route_info_row_strings[1:]):
-            try:
-                list_route_info_row_col_string = value.split("sAndErnEstcol")
-                sql = "INSERT INTO route_info (day,title,body) VALUES (?,?,?)"
-                val = (str(list_route_info_row_col_string[2]),str(list_route_info_row_col_string[3]),str(list_route_info_row_col_string[4]))
-                c_mbtiles.execute(sql,val)
-            except:
-                pass
-        db_mbtiles.commit()
-        db_mbtiles.close()
-        return print("route_info table is filled")
-
-    def fillRouteCoordinatesTable(self,req4):
-        filename = "map_data.mbtiles"
-        db_mbtiles = sqlite3.connect(filename)
-        c_mbtiles = db_mbtiles.cursor()
-        c_mbtiles.execute("CREATE TABLE `route_coordinates` (`day` varchar(10) NOT NULL, `coordinate_string` blob NOT NULL)")
-
-        #Strip the long string
-        list_route_coordinates_row_strings = req4.result.split("sAndErnEstrow")
-        for index,value in enumerate(list_route_coordinates_row_strings[1:]):
-            try:
-                list_route_coordinates_row_col_string = value.split("sAndErnEstcol")
-                sql = "INSERT INTO route_coordinates (day,coordinate_string) VALUES (?,?)"
-                val = (str(list_route_coordinates_row_col_string[2]),list_route_coordinates_row_col_string[3])
-                c_mbtiles.execute(sql,val)
-            except:
-                pass
-        db_mbtiles.commit()
-        db_mbtiles.close()
-        return print("route_coordinates table is filled")
-
+class MainApp(MDApp):
     def build(self,*args):
         filename = "map_data.mbtiles"
-        if  os.path.exists(filename):
+        if os.path.exists(filename):
             print("map_data exists")
+            return WindowManager()
         else:
             print("map_data does not exists")
-            try:
-                filename = "map_data.mbtiles"
-                db_mbtiles = sqlite3.connect(filename)
-                db_mbtiles.close()
-                req1 = UrlRequest("http://192.168.178.234:5000/tiles")
-                req1.wait()
-                self.fillTileTable(req1)
-                req2 = UrlRequest("http://192.168.178.234:5000/metadata")
-                req2.wait()
-                self.fillMetaDataTable(req2)
-                req3 = UrlRequest("http://192.168.178.234:5000/route/info")
-                req3.wait()
-                self.fillRouteInfoTable(req3)
-                req4 = UrlRequest("http://192.168.178.234:5000/route/coordinates")
-                req4.wait()
-                self.fillRouteCoordinatesTable(req4)
-            except:
-                os.remove(filename)
-                print("Something went wrong")
-            finally:
-                print("The 'try except' is finished")
-        return WindowManager()
+            return StartWindowManager()
 
 if __name__ == "__main__":
     MainApp().run()
