@@ -12,17 +12,11 @@ c_mysql = db_mysql.cursor()
 ##PRINT THE NUMBER OF TILES FROM MBTILES FILE
 c_mbtiles.execute("SELECT * FROM tiles")
 data = c_mbtiles.fetchall()
-print(str(data[0][3],encoding='utf-8',errors='strict'))
-
-# print((data[0][3]).hex())
-# print(base64.b64encode(data[0][3]))
-# print(bytes.fromhex((data[0][3]).hex()))
+# print(str(data[0][3],encoding='utf-8',errors='strict'))
 
 while row is not None:
     try:
         row = c_mbtiles.fetchone()
-        # print(len(str(row[3])))
-        # print(type(row[0]),type(row[1]),type(row[2]),str(row[3]))
         sql = "INSERT INTO tiles (zoom_level,tile_column,tile_row,tile_data) VALUES (%s,%s,%s,%s)"
         val = (row[0],row[1],row[2],row[3])
         c_mysql.execute(sql,val)
