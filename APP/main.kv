@@ -47,6 +47,9 @@
         MDLabel:
             text:'Let op! Wij raden aan om de kaart te downloaden als u met wifi verbonden bent.'
             font_style:'Body1'
+        ProgressBar:
+            id:progress_bar
+            max:100
         MDRaisedButton:
             text:'Download de kaart'
             font_style:'Body1'
@@ -54,9 +57,7 @@
             md_bg_color: 1, 0, 1, 1
             on_release:
                 root.verify_password()
-        #ProgressBar:
-            #id:progress_bar
-          #  max:100
+
 
 
 

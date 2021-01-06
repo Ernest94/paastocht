@@ -133,30 +133,25 @@ class LogginScreen(Screen):
     def __init__(self, **kwargs):
         super(LogginScreen, self).__init__(**kwargs)
 
-    def error(self,*args):
-        return print("error")
-
     def verify_password(self, *args):
         headers = {'Content-type': 'application/json',
             'Accept': 'text/plain'}
         values = {'password':self.ids.password_input.text}
         params = json.dumps(values)
-        password_req = UrlRequest('http://192.168.178.234:5000/verify', req_body=params, req_headers=headers, on_error=self.error())
+        password_req = UrlRequest('http://192.168.178.234:5000/verify', req_body=params, req_headers=headers)
         password_req.wait()
         if password_req.result=="1":
             print("password is correct")
+            DownloadMapData().initialize()
             self.switch_screen()
         else:
             print("wrong password")
 
     def switch_screen(self, *args):
-        DownloadMapData().initialize()
         self.manager.current = 'routesindexwindow'
         self.manager.transition.direction = "left"
         return WindowManager()
     
-
-
 class RoutesIndexWindow(Screen):
     dagindexwindow = StringProperty()
     def btn1_pressed(self):
