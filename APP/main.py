@@ -18,6 +18,12 @@ from mapview.mbtsource import MBTilesMapSource
 from routedrawhelper import LineMapLayer
 from gpshelper import GpsHelper
 
+PASSWORD_VERIFICATION_URL = "http://192.168.1.16:5000/verify" #post-request for password verification -> sends "1" back when valid, "0" not valid
+TILES_URL = "http://192.168.1.16:5000/tiles" #get-request to collect the tiles data
+META_DATA_URL = "http://192.168.1.16:5000/metadata" #get-request to collect the metadata of the map
+ROUTE_INFO_URL = "http://192.168.1.16:5000/route/info" #get-request to collect the route-info of the map
+ROUTE_COORDINATES_URL = "http://192.168.1.16:5000/route/coordinates" #get-request to collect route-coordinates
+
 class StartWindowManager(ScreenManager):
     pass
 
@@ -34,14 +40,14 @@ class LogginScreen(Screen):
             'Accept': 'text/plain'}
         values = {'password':self.ids.password_input.text}
         params = json.dumps(values)
-        password_req = UrlRequest('http://192.168.1.16:5000/verify', req_body=params, req_headers=headers)
+        password_req = UrlRequest(PASSWORD_VERIFICATION_URL, req_body=params, req_headers=headers)
         password_req.wait()
         if password_req.result=="1":
             print("password is correct")
-            tiles_req = UrlRequest("http://192.168.1.16:5000/tiles",on_success=self.fill_tiles_table)
-            meta_data_req = UrlRequest("http://192.168.1.16:5000/metadata",on_success=self.fill_meta_data_table)
-            rout_info_req = UrlRequest("http://192.168.1.16:5000/route/info",on_success=self.fill_route_info_table)
-            route_coord_req = UrlRequest("http://192.168.1.16:5000/route/coordinates",on_success=self.fill_route_coord_table)
+            tiles_req = UrlRequest(TILES_URL,on_success=self.fill_tiles_table)
+            meta_data_req = UrlRequest(META_DATA_URL,on_success=self.fill_meta_data_table)
+            rout_info_req = UrlRequest(ROUTE_INFO_URL,on_success=self.fill_route_info_table)
+            route_coord_req = UrlRequest(ROUTE_COORDINATES_URL,on_success=self.fill_route_coord_table)
         else:
             print("wrong password")
             self.ids.download_button.disabled = False
