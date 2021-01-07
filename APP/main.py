@@ -110,16 +110,16 @@ class DownloadMapData():
         db_mbtiles = sqlite3.connect(filename)
         db_mbtiles.close()
         try:
-            req1 = UrlRequest("http://192.168.178.234:5000/tiles")
+            req1 = UrlRequest("http://192.168.1.16:5000/tiles")
             req1.wait()
             self.fillTileTable(req1)
-            req2 = UrlRequest("http://192.168.178.234:5000/metadata")
+            req2 = UrlRequest("http://192.168.1.16:5000/metadata")
             req2.wait()
             self.fillMetaDataTable(req2)
-            req3 = UrlRequest("http://192.168.178.234:5000/route/info")
+            req3 = UrlRequest("http://192.168.1.16:5000/route/info")
             req3.wait()
             self.fillRouteInfoTable(req3)
-            req4 = UrlRequest("http://192.168.178.234:5000/route/coordinates")
+            req4 = UrlRequest("http://192.168.1.16:5000/route/coordinates")
             req4.wait()
             self.fillRouteCoordinatesTable(req4)
         except:
@@ -138,7 +138,7 @@ class LogginScreen(Screen):
             'Accept': 'text/plain'}
         values = {'password':self.ids.password_input.text}
         params = json.dumps(values)
-        password_req = UrlRequest('http://192.168.178.234:5000/verify', req_body=params, req_headers=headers)
+        password_req = UrlRequest('http://192.168.1.16:5000/verify', req_body=params, req_headers=headers)
         password_req.wait()
         if password_req.result=="1":
             print("password is correct")
@@ -150,7 +150,6 @@ class LogginScreen(Screen):
     def switch_screen(self, *args):
         self.manager.current = 'routesindexwindow'
         self.manager.transition.direction = "left"
-        return WindowManager()
     
 class RoutesIndexWindow(Screen):
     dagindexwindow = StringProperty()
