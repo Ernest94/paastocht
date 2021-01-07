@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request
-import mysql.connector;
 import base64
 import json
+import mysql.connector;
+from flask import Flask,request
+
 
 app = Flask(__name__)
 

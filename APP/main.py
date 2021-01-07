@@ -5,7 +5,6 @@ import json
 import threading
 
 from kivymd.app import MDApp
-
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.clock import Clock
@@ -23,12 +22,6 @@ TILES_URL = "http://192.168.1.16:5000/tiles" #get-request to collect the tiles d
 META_DATA_URL = "http://192.168.1.16:5000/metadata" #get-request to collect the metadata of the map
 ROUTE_INFO_URL = "http://192.168.1.16:5000/route/info" #get-request to collect the route-info of the map
 ROUTE_COORDINATES_URL = "http://192.168.1.16:5000/route/coordinates" #get-request to collect route-coordinates
-
-class StartWindowManager(ScreenManager):
-    pass
-
-class WindowManager(ScreenManager):
-    pass
 
 class LogginScreen(Screen):
     def __init__(self, **kwargs):
@@ -50,11 +43,16 @@ class LogginScreen(Screen):
             route_coord_req = UrlRequest(ROUTE_COORDINATES_URL,on_success=self.fill_route_coord_table)
         else:
             print("wrong password")
+            self.ids.error_message.text = "Wachtwoord is niet correct"
             self.ids.download_button.disabled = False
 
     def update_progress_bar(self,*args):
         if self.ids.progress_bar.value<0.8:
             self.ids.progress_bar.value = self.ids.progress_bar.value + 0.1
+  
+    def little_update_progress_bar(self,*args):
+        if self.ids.progress_bar.value<0.9:
+            self.ids.progress_bar.value = self.ids.progress_bar.value + 0.0001
 
     def switch_screen(self, *args):
         self.manager.current = 'routesindexwindow'
@@ -272,6 +270,11 @@ class RouteMap(Screen):
     def on_leave(self):
         self.ids.mapview.remove_layer(self.layer)
         self.ids.mapview.zoom = 16
+
+class StartWindowManager(ScreenManager):
+    pass
+class WindowManager(ScreenManager):
+    pass
 
 class MainApp(MDApp):
     def build(self,*args):

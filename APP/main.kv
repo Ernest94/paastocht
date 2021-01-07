@@ -45,6 +45,12 @@
             multiline: False
             pos_hint: {"center_x": .5}
         MDLabel:
+            id:error_message            
+            halign: "center"
+            color: 1,0,0,1         
+            text:''
+            font_style:'Body1'
+        MDLabel:
             text:'Let op! Wij raden aan om de kaart te downloaden als u met wifi verbonden bent.'
             font_style:'Body1'
         ProgressBar:
