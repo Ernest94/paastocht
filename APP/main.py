@@ -43,7 +43,7 @@ class LogginScreen(Screen):
             route_coord_req = UrlRequest(ROUTE_COORDINATES_URL,on_success=self.fill_route_coord_table)
         else:
             print("wrong password")
-            self.ids.error_message.text = "Wachtwoord is niet correct"
+            self.ids.error_message.text = "Kan kaart niet downloaden. Mogelijk is het ingevoerde wachtwoord niet correct."
             self.ids.download_button.disabled = False
 
     def update_progress_bar(self,*args):
