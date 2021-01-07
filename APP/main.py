@@ -2,6 +2,7 @@ import sqlite3;
 import base64
 import os
 import json
+import threading
 
 from kivymd.app import MDApp
 
@@ -24,14 +25,14 @@ class WindowManager(ScreenManager):
     pass
 
 class DownloadMapData():
-    def fillTileTable(self,req1):
+    def fillTileTableThread(self,req):
         filename = "map_data.mbtiles"
         db_mbtiles = sqlite3.connect(filename)
         c_mbtiles = db_mbtiles.cursor()
         c_mbtiles.execute("CREATE TABLE `tiles` (`zoom_level` int NOT NULL, `tile_column` int NOT NULL, `tile_row` int NOT NULL, `tile_data` BLOB NOT NULL)")
         
         ##Strip the long string
-        list_tile_row_strings = req1.result.split("sAndErnEstrow")
+        list_tile_row_strings = req.result.split("sAndErnEstrow")
         for index,value in enumerate(list_tile_row_strings[1:]):
             try:
                 list_tile_row_col_string = value.split("sAndErnEstcol")
@@ -43,16 +44,17 @@ class DownloadMapData():
                 pass
         db_mbtiles.commit()
         db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
         return print("tile table is filled")
 
-    def fillMetaDataTable(self,req2):
+    def fillMetaDataTableThread(self,req):
         filename = "map_data.mbtiles"
         db_mbtiles = sqlite3.connect(filename)
         c_mbtiles = db_mbtiles.cursor()
         c_mbtiles.execute("CREATE TABLE `metadata` (`name` string NOT NULL, `value` string NOT NULL)")
 
         #Strip the long string
-        list_metadata_row_strings = req2.result.split("sAndErnEstrow")
+        list_metadata_row_strings = req.result.split("sAndErnEstrow")
         for index,value in enumerate(list_metadata_row_strings[1:]):
             try:
                 list_metadata_row_col_string = value.split("sAndErnEstcol")
@@ -63,16 +65,17 @@ class DownloadMapData():
                 pass
         db_mbtiles.commit()
         db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
         return print("metadata table is filled")
 
-    def fillRouteInfoTable(self,req3):
+    def fillRouteInfoTableThread(self,req):
         filename = "map_data.mbtiles"
         db_mbtiles = sqlite3.connect(filename)
         c_mbtiles = db_mbtiles.cursor()
         c_mbtiles.execute("CREATE TABLE `route_info` (`day` varchar(10) NOT NULL, `title` string NOT NULL,`body` string NOT NULL)")
 
         #Strip the long string
-        list_route_info_row_strings = req3.result.split("sAndErnEstrow")
+        list_route_info_row_strings = req.result.split("sAndErnEstrow")
         for index,value in enumerate(list_route_info_row_strings[1:]):
             try:
                 list_route_info_row_col_string = value.split("sAndErnEstcol")
@@ -83,16 +86,17 @@ class DownloadMapData():
                 pass
         db_mbtiles.commit()
         db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
         return print("route_info table is filled")
 
-    def fillRouteCoordinatesTable(self,req4):
+    def fillRouteCoordinatesTableThread(self,req):
         filename = "map_data.mbtiles"
         db_mbtiles = sqlite3.connect(filename)
         c_mbtiles = db_mbtiles.cursor()
         c_mbtiles.execute("CREATE TABLE `route_coordinates` (`day` varchar(10) NOT NULL, `coordinate_string` blob NOT NULL)")
 
         #Strip the long string
-        list_route_coordinates_row_strings = req4.result.split("sAndErnEstrow")
+        list_route_coordinates_row_strings = req.result.split("sAndErnEstrow")
         for index,value in enumerate(list_route_coordinates_row_strings[1:]):
             try:
                 list_route_coordinates_row_col_string = value.split("sAndErnEstcol")
@@ -103,37 +107,68 @@ class DownloadMapData():
                 pass
         db_mbtiles.commit()
         db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
         return print("route_coordinates table is filled")
 
+    # def initialize(self,*args):
+    #     filename = "map_data.mbtiles"
+    #     db_mbtiles = sqlite3.connect(filename)
+    #     db_mbtiles.close()
+    #     try:
+    #         req1 = UrlRequest("http://192.168.1.16:5000/tiles")
+    #         req1.wait()
+    #         self.fillTileTable(req1)
+    #         req2 = UrlRequest("http://192.168.1.16:5000/metadata")
+    #         req2.wait()
+    #         self.fillMetaDataTable(req2)
+    #         req3 = UrlRequest("http://192.168.1.16:5000/route/info")
+    #         req3.wait()
+    #         self.fillRouteInfoTable(req3)
+    #         req4 = UrlRequest("http://192.168.1.16:5000/route/coordinates")
+    #         req4.wait()
+    #         self.fillRouteCoordinatesTable(req4)
+    #     except:
+    #         os.remove(filename)
+    #         print("Something went wrong")
+    #     finally:
+    #         print("The 'try except' is finished")
+    
+    def fillTileTable(self, req, result):
+        print("okay")
+        threading.Thread(target=self.fillTileTableThread(req)).start()
+    def fillMetaDataTable(self, req, result):
+        threading.Thread(target=self.fillMetaDataTableThread(req)).start()
+    def fillRouteInfoTable(self, req, result):
+        threading.Thread(target=self.fillRouteInfoTableThread(req)).start()
+    def fillRouteCoordinatesTable(self, req, result):
+        threading.Thread(target=self.fillRouteCoordinatesTableThread(req)).start()
+
     def initialize(self,*args):
+        print(*args{Screen.name])
         filename = "map_data.mbtiles"
         db_mbtiles = sqlite3.connect(filename)
         db_mbtiles.close()
         try:
-            req1 = UrlRequest("http://192.168.1.16:5000/tiles")
-            req1.wait()
-            self.fillTileTable(req1)
-            req2 = UrlRequest("http://192.168.1.16:5000/metadata")
-            req2.wait()
-            self.fillMetaDataTable(req2)
-            req3 = UrlRequest("http://192.168.1.16:5000/route/info")
-            req3.wait()
-            self.fillRouteInfoTable(req3)
-            req4 = UrlRequest("http://192.168.1.16:5000/route/coordinates")
-            req4.wait()
-            self.fillRouteCoordinatesTable(req4)
+            tilesReq = UrlRequest("http://192.168.1.16:5000/tiles",on_success=self.fillTileTable)
+            metaDataReq = UrlRequest("http://192.168.1.16:5000/metadata",on_success=self.fillMetaDataTable)
+            routInfoReq = UrlRequest("http://192.168.1.16:5000/route/info",on_success=self.fillRouteInfoTable)
+            routeCoordReq = UrlRequest("http://192.168.1.16:5000/route/coordinates",on_success=self.fillRouteCoordinatesTable)
         except:
             os.remove(filename)
             print("Something went wrong")
         finally:
             print("The 'try except' is finished")
-    
+
+    def update_progress_bar():
+        if App.get_running_app().root.current_screen.ids.progress_bar<0.8:
+            App.get_running_app().root.current_screen.ids.progress_bar = App.get_running_app().root.current_screen.ids.progress_bar + 0.25
 
 class LogginScreen(Screen):
     def __init__(self, **kwargs):
         super(LogginScreen, self).__init__(**kwargs)
 
     def verify_password(self, *args):
+        self.ids.download_button.disabled = True
         headers = {'Content-type': 'application/json',
             'Accept': 'text/plain'}
         values = {'password':self.ids.password_input.text}
@@ -142,10 +177,114 @@ class LogginScreen(Screen):
         password_req.wait()
         if password_req.result=="1":
             print("password is correct")
-            DownloadMapData().initialize()
-            self.switch_screen()
+            tiles_req = UrlRequest("http://192.168.1.16:5000/tiles",on_success=self.fill_tiles_table)
+            meta_data_req = UrlRequest("http://192.168.1.16:5000/metadata",on_success=self.fill_meta_data_table)
+            rout_info_req = UrlRequest("http://192.168.1.16:5000/route/info",on_success=self.fill_route_info_table)
+            route_coord_req = UrlRequest("http://192.168.1.16:5000/route/coordinates",on_success=self.fill_route_coord_table)
         else:
             print("wrong password")
+            self.ids.download_button.disabled = False
+
+
+    def update_progress_bar(self,*args):
+        if self.ids.progress_bar.value<0.8:
+            self.ids.progress_bar.value = self.ids.progress_bar.value + 0.1
+
+    def fill_tiles_table(self, req, result):
+        threading.Thread(target=self.fill_tiles_table_thread(req)).start()
+    def fill_meta_data_table(self, req, result):
+        threading.Thread(target=self.fill_meta_data_table_thread(req)).start()
+    def fill_route_info_table(self, req, result):
+        threading.Thread(target=self.fill_route_info_table_thread(req)).start()
+    def fill_route_coord_table(self, req, result):
+        threading.Thread(target=self.fill_route_coord_table_thread(req)).start()
+
+
+    def fill_tiles_table_thread(self,req):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `tiles` (`zoom_level` int NOT NULL, `tile_column` int NOT NULL, `tile_row` int NOT NULL, `tile_data` BLOB NOT NULL)")
+        
+        ##Strip the long string
+        list_tile_row_strings = req.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_tile_row_strings[1:]):
+            try:
+                list_tile_row_col_string = value.split("sAndErnEstcol")
+                row_4_bytes = base64.decodebytes(list_tile_row_col_string[5].encode('utf-8'))
+                sql = "INSERT INTO tiles (zoom_level,tile_column,tile_row,tile_data) VALUES (?,?,?,?)"
+                val = (int(list_tile_row_col_string[2]),int(list_tile_row_col_string[3]),int(list_tile_row_col_string[4]),row_4_bytes)
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
+        Clock.schedule_once(self.switch_screen)
+        return print("tile table is filled")
+
+    def fill_route_info_table_thread(self,req):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `route_info` (`day` varchar(10) NOT NULL, `title` string NOT NULL,`body` string NOT NULL)")
+
+        #Strip the long string
+        list_route_info_row_strings = req.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_route_info_row_strings[1:]):
+            try:
+                list_route_info_row_col_string = value.split("sAndErnEstcol")
+                sql = "INSERT INTO route_info (day,title,body) VALUES (?,?,?)"
+                val = (str(list_route_info_row_col_string[2]),str(list_route_info_row_col_string[3]),str(list_route_info_row_col_string[4]))
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
+        return print("route_info table is filled")
+
+    def fill_route_coord_table_thread(self,req):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `route_coordinates` (`day` varchar(10) NOT NULL, `coordinate_string` blob NOT NULL)")
+
+        #Strip the long string
+        list_route_coordinates_row_strings = req.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_route_coordinates_row_strings[1:]):
+            try:
+                list_route_coordinates_row_col_string = value.split("sAndErnEstcol")
+                sql = "INSERT INTO route_coordinates (day,coordinate_string) VALUES (?,?)"
+                val = (str(list_route_coordinates_row_col_string[2]),list_route_coordinates_row_col_string[3])
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
+        return print("route_coordinates table is filled")
+
+    def fill_meta_data_table_thread(self,req):
+        filename = "map_data.mbtiles"
+        db_mbtiles = sqlite3.connect(filename)
+        c_mbtiles = db_mbtiles.cursor()
+        c_mbtiles.execute("CREATE TABLE `metadata` (`name` string NOT NULL, `value` string NOT NULL)")
+
+        #Strip the long string
+        list_metadata_row_strings = req.result.split("sAndErnEstrow")
+        for index,value in enumerate(list_metadata_row_strings[1:]):
+            try:
+                list_metadata_row_col_string = value.split("sAndErnEstcol")
+                sql = "INSERT INTO metadata (name,value) VALUES (?,?)"
+                val = (str(list_metadata_row_col_string[2]),str(list_metadata_row_col_string[3]))
+                c_mbtiles.execute(sql,val)
+            except:
+                pass
+        db_mbtiles.commit()
+        db_mbtiles.close()
+        Clock.schedule_once(self.update_progress_bar)
+        return print("metadata table is filled")
 
     def switch_screen(self, *args):
         self.manager.current = 'routesindexwindow'
